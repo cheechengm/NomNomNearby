@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Google Map</title>
+    <style>
+        #map{
+            height: 500px;
+            width:40%;
+        }
+    </style>
+</head>
+ <body>
+    <div class="container">
+        <br><br>
+        <h1 class="text-center">NomNomNearby</h1>
+        <body>Having a hard time deciding what to eat? Not to worry! NomNomNearby will help you pick a restaurant!<body>
+        <div id="map"></div>
+        <div class="form-group">
+            <label for="location">Enter Location :</label>
+            <br><br>
+            <input type="text" class="form-control" id="autocomplete" placeholder="Enter a Location">
+        </div>
+        <!--
+        <br>
+        <div class="form-group">
+            <label for="type">Select Place Type:</label>
+            <br>
+            <select class="form-control" name="type" id="type">
+                <option id="restaurant">restaurant</option>
+            </select>
+        </div>
+    -->
+        <br><br>
+        <table class="table table-bordered table-striped" id="places"></table>
+        <button onclick="pickRandomRestaurant()">Pick a Random Restaurant</button>
+        <p id="randomRestaurant"></p>
+    </div>
+
+    <script>
+        var restaurant = [];
+        var map;
+        var markers = [];
+        var table;
+
+      function initMap() {
+    autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('autocomplete'),
+        { types: ['geocode'] }
+    );
+
+    autocomplete.addListener('place_changed', searchNearbyPlaces);
+}
+
+        function searchNearbyPlaces() {
+            document.getElementById('places').innerHTML = '';
+
+            var place = autocomplete.getPlace();
+            console.log(place);
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: place.geometry.location,
+                zoom: 15
+            });
+
+            var service = new google.maps.places.PlacesService(map);
+            service.nearbySearch({
+                location: place.geometry.location,
+                radius: '500',
+                //type: [document.getElementById('type').value]
+                type:['restaurant']
+            }, callback);
+        }
+        function callback(results, status) {
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                console.log(results.length);
+                for (var i = 0; i < results.length; i++) {
+                    createMarker(results[i]);
+                }
+            }
+        }
+         
+        function createMarker(place) {
+            var marker = new google.maps.Marker({
+                map: map,
+                position: place.geometry.location,
+                title: place.name
+            });
+            markers.push(marker);
+            console.log(place);
+            var table = document.getElementById("places");
+            var row = table.insertRow();
+            var cell1 = row.insertCell(0);
+            cell1.innerHTML = place.name;
+            if (place.photos) {
+                var photoUrl = place.photos[0].getUrl();
+                var cell2 = row.insertCell(1);
+                cell2.innerHTML = '<img width="300" height="300" src="' + photoUrl + '">';
+            } else {
+                var photoUrl = "https://via.placeholder.com/150";
+                var cell2 = row.insertCell(1);
+                cell2.innerHTML = '<img width="300" height="300" src="' + photoUrl + '">';
+            }
+        }
+
+        function pickRandomRestaurant() {
+            var table = document.getElementById("places");
+            var rowCount = table.rows.length;
+            if (rowCount > 0) {
+                var randomIndex = Math.floor(Math.random() * rowCount);
+                var randomRow = table.rows[randomIndex];
+                var randomRestaurantName = randomRow.cells[0].innerText;
+                document.getElementById("randomRestaurant").innerText = "Randomly selected restaurant: " + randomRestaurantName;
+            } else {
+                document.getElementById("randomRestaurant").innerText = "No restaurants found nearby.";
+            }
+        }
+    /*
+    function initMap(){
+        var options = {
+            zoom:16,
+            center:{lat:1.3483,lng:103.6831}
+        }
+    
+        let map = new google.maps.Map(document.getElementById('map'),options);
+
+        let markerOptions = {
+            position: new google.maps.LatLng(1.3483,103.6831),
+            map: map
+            
+        }
+
+        let marker = new google.maps.Marker(markerOptions)
+
+        
+
+        
+    } */
+    </script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABhCJZnZJWuvS-IEucRZJYqCb_4_O7cdg&libraries=places&callback=initMap"></script>
+
+</body>
+</html>
